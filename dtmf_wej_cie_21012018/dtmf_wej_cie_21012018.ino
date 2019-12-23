@@ -1,17 +1,18 @@
          
-int STQ = 12;       
- const int Q4 = 11;        
- const int Q3 = 10;       
- const int Q2 = 9;       
- const int Q1 = 8;        
+#define STQ 12       
+#define Q4  11        
+#define Q3  10       
+#define Q2  9      
+#define Q1  8       
 byte raz=1;
 
-byte pin_tone=5; // PIN NADAJĄCY DO CENTRALI
-
+#define pin_tone 5 // PIN NADAJĄCY DO CENTRALI
+#define czas_po_nadaniu_numeru_start_val 1000
+#define czas_po_odebraniu_cid_start_val  1500         
 int etap=1; // ETAPY KONTAKTU Z CENTRALA DTMF
-long czas_po_nadaniu_numeru=1000;
+long czas_po_nadaniu_numeru=czas_po_nadaniu_numeru_start_val;
 int start_czas_1=0;
-long czas_po_odebraniu_cid=1500;
+long czas_po_odebraniu_cid=czas_po_odebraniu_cid_start_val;
 int start_czas_2=0;
 String cid="";
 byte index_cid_char=0;

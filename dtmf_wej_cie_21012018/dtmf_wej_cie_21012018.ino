@@ -4,102 +4,109 @@
 #define Q3  10       
 #define Q2  9      
 #define Q1  8       
-byte raz=1;
 
 #define pin_tone 5 // PIN NADAJĄCY DO CENTRALI
 #define czas_po_nadaniu_numeru_start_val 1000
 #define czas_po_odebraniu_cid_start_val  1500         
-int etap=1; // ETAPY KONTAKTU Z CENTRALA DTMF
+
 long czas_po_nadaniu_numeru=czas_po_nadaniu_numeru_start_val;
-int start_czas_1=0;
 long czas_po_odebraniu_cid=czas_po_odebraniu_cid_start_val;
-int start_czas_2=0;
+struct //definicja zmiennych operacyjnych dla czasu
+{
+  char sczas_1 :1;
+  char sczas_2 :1;
+}start_czas;
+
 String cid="";
 byte index_cid_char=0;
+struct { // definicja etapów interpretacji sygnałów
+    char e1  :1;
+    char e2  :1;
+    char e3  :1;
+    char raz :1;
+    char etap:4; // ETAPY KONTAKTU Z CENTRALA DTMF
+}state;
 
-int e1=1;
-int e2=1; // TYMCZASOWO TO WYSWIETLANYCH STRINGOW 
-int e3=1;  // TYMCZASOWO TO WYSWIETLANYCH STRINGOW ETAP 123456
 
 int rozpznanie_wej_DTMF(){
  if(digitalRead(STQ)==HIGH){       //When a DTMF tone is detected, STQ will read HIGH for the duration of the tone.
 
-  if(raz==1){
+  if(state.raz==1){
     
     if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==HIGH)){    //1  
           
           //Serial.println(1);
-          raz=0; 
+          state.raz=0; 
           return 1;
         }else if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==LOW)){     //2 
          
           //Serial.println(2);
-          raz=0; 
+          state.raz=0; 
           return 2;
         }else if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==HIGH)){  //3    
           
          // Serial.println(3);
-          raz=0; 
+          state.raz=0; 
           return 3;
         }else if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==LOW)){   //4   
           
           //Serial.println(4);
-          raz=0; 
+          state.raz=0; 
           return 4;
         }else if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==HIGH)){  //5    
           
           //Serial.println(5);
-          raz=0; 
+          state.raz=0; 
           return 5;
         }else if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==LOW)){ //6     
           
           //Serial.println(6);
-          raz=0; 
+          state.raz=0; 
           return 6;
         }else if((digitalRead(Q4)==LOW)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==HIGH)){  //7     
           
           //Serial.println(7);
-          raz=0; 
+          state.raz=0; 
           return 7;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==LOW)){  //8    
           
           //Serial.println(8);
-          raz=0; 
+          state.raz=0; 
           return 8;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==HIGH)){  //9   
           
           //Serial.println(9);
-          raz=0; 
+          state.raz=0; 
           return 9;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==LOW)){  //10    
          
           //Serial.println(0);
-          raz=0; 
+          state.raz=0; 
           return 10;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==LOW)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==HIGH)){ //11    
           
          // Serial.println(bit_wej_dtmf);
-          raz=0; 
+          state.raz=0; 
           return 11;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==LOW)){  //12    
           
          // Serial.println(bit_wej_dtmf);
-          raz=0; 
+          state.raz=0; 
           return 12;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==LOW)&(digitalRead(Q1)==HIGH)){  //13    
           
         //  Serial.println(bit_wej_dtmf);
-          raz=0; 
+          state.raz=0; 
           return 13;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==LOW)){ //14     
           
         //  Serial.println(bit_wej_dtmf);
-          raz=0; 
+          state.raz=0; 
           return 14;
         }else if((digitalRead(Q4)==HIGH)&(digitalRead(Q3)==HIGH)&(digitalRead(Q2)==HIGH)&(digitalRead(Q1)==HIGH)){  //15    
           
           //Serial.println(bit_wej_dtmf);
-          raz=0; 
+          state.raz=0; 
           return 15;
         }
    
@@ -109,7 +116,7 @@ int rozpznanie_wej_DTMF(){
       }
   return -1;    
   }else{
-    raz=1;
+    state.raz=1;
   return -1;  
   }
   
@@ -121,7 +128,8 @@ int rozpznanie_wej_DTMF(){
 
 void setup() {
 
-  
+  start_czas={0,0};
+  state={1,1,1,1,1};// ustawiwnie domyślne dla state
 
   Serial.begin(9600);
   pinMode(STQ, INPUT);
@@ -137,31 +145,31 @@ loop() : Arduino will interpret the DTMF module output and position the Servo ac
 void loop() {
   
   
-  if(etap==1){// ODBIERNIAE NR TELEFONU ... PO SEKUNDOWEJ PRZERWIE (MINILANIE DLUŻSZA) PODAJEM SYGNAŁY Z ETAPU 2 HANDSHAKE
-     if(e1==1){
-      e1=0;
+  if(state.etap==1){// ODBIERNIAE NR TELEFONU ... PO SEKUNDOWEJ PRZERWIE (MINILANIE DLUŻSZA) PODAJEM SYGNAŁY Z ETAPU 2 HANDSHAKE
+     if(state.e1==1){
+      state.e1=0;
     Serial.println("etap1");
     tone(pin_tone,300);
     }
     if(rozpznanie_wej_DTMF()!=(-1)){
       
-      start_czas_1=1;
+      start_czas.sczas_1=1;
       czas_po_nadaniu_numeru=1200+millis();
     }
  
   }
-  if(start_czas_1==1){ // JEZELI MINEŁA SEKUNDA (1.2S) OD OSTATNIEGO KOMUNIKATU .. BITU WTEDY PRZECHODZIMY DO ETAPU 2 ... GDZIE POTWIERDZAMY ODEBRANIE NUMERU HANDSHAKE
+  if(start_czas.sczas_1==1){ // JEZELI MINEŁA SEKUNDA (1.2S) OD OSTATNIEGO KOMUNIKATU .. BITU WTEDY PRZECHODZIMY DO ETAPU 2 ... GDZIE POTWIERDZAMY ODEBRANIE NUMERU HANDSHAKE
     if(millis()>czas_po_nadaniu_numeru){
-      etap=2;
-      start_czas_1=0;
-      e2=1;
+      state.etap=2;
+      start_czas.sczas_1=0;
+      state.e2=1;
     }
   }
   
   
-  if(etap==2){ // HANDSHAKE
-    if(e2==1){
-      e2=0;
+  if(state.etap==2){ // HANDSHAKE
+    if(state.e2==1){
+      state.e2=0;
     Serial.println("etap2");
     }
     tone(pin_tone,1400);
@@ -171,19 +179,19 @@ void loop() {
     delay(100);
     noTone(pin_tone);
     
-    etap=3;
-    e3=1;
+    state.etap=3;
+    state.e3=1;
   }
   
-  if(etap==3){ // ETTAP 3 TO ODCZYTYWANIE CIDA
-    if(e3==1){
-      e3=0;
+  if(state.etap==3){ // ETTAP 3 TO ODCZYTYWANIE CIDA
+    if(state.e3==1){
+      state.e3=0;
     Serial.println("etap3");
     }
    int cid1=rozpznanie_wej_DTMF();
    
    if(cid1!=(-1)){
-    start_czas_2=1;
+    start_czas.sczas_2=1;
     czas_po_odebraniu_cid=13000+millis();
     
       switch( cid1 )
@@ -252,12 +260,12 @@ void loop() {
     }
  
   }
-  if(start_czas_2==1){ // jezeli minal czas po nadaniu ostatniego cida ... wracamy do punktu 1
+  if(start_czas.sczas_2==1){ // jezeli minal czas po nadaniu ostatniego cida ... wracamy do punktu 1
     //Serial.println("kuoa");
     if(millis()>czas_po_odebraniu_cid){
-      etap=1;
-      start_czas_2=0;
-      e1=1;
+      state.etap=1;
+      start_czas.sczas_2=0;
+      state.e1=1;
     }
   }
   

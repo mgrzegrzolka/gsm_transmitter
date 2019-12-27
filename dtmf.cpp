@@ -1,32 +1,10 @@
-         
-#define STQ 12       
-#define Q4  11        
-#define Q3  10       
-#define Q2  9      
-#define Q1  8       
-
-#define pin_tone 5 // PIN NADAJĄCY DO CENTRALI
-#define czas_po_nadaniu_numeru_start_val 1000
-#define czas_po_odebraniu_cid_start_val  1500         
+#include <Arduino.h>
+#include "dtmf.h"
 
 long czas_po_nadaniu_numeru=czas_po_nadaniu_numeru_start_val;
-long czas_po_odebraniu_cid=czas_po_odebraniu_cid_start_val;
-struct //definicja zmiennych operacyjnych dla czasu
-{
-  char sczas_1 :1;
-  char sczas_2 :1;
-}start_czas;
-
+long czas_po_odebraniu_cid=czas_po_odebraniu_cid_start_val;      
 String cid="";
 byte index_cid_char=0;
-struct { // definicja etapów interpretacji sygnałów
-    char e1  :1;
-    char e2  :1;
-    char e3  :1;
-    char raz :1;
-    char etap:4; // ETAPY KONTAKTU Z CENTRALA DTMF
-}state;
-
 
 int rozpznanie_wej_DTMF(){
  if(digitalRead(STQ)==HIGH){       //When a DTMF tone is detected, STQ will read HIGH for the duration of the tone.
@@ -126,7 +104,7 @@ int rozpznanie_wej_DTMF(){
 
 }
 
-void setup() {
+void dtmf_init() {
 
   start_czas={0,0};
   state={1,1,1,1,1};// ustawiwnie domyślne dla state
@@ -142,7 +120,7 @@ void setup() {
 /*=========================================================================================================
 loop() : Arduino will interpret the DTMF module output and position the Servo accordingly
 ========================================================================================================== */
-void loop() {
+void cykl() {
   
   
   if(state.etap==1){// ODBIERNIAE NR TELEFONU ... PO SEKUNDOWEJ PRZERWIE (MINILANIE DLUŻSZA) PODAJEM SYGNAŁY Z ETAPU 2 HANDSHAKE

@@ -1,5 +1,7 @@
 #include <gprs.h>
 #include <SoftwareSerial.h>
+
+#include "dtmf.h"
 // licza pinów wejściowych
 #define pins 2 // liczba aktywanych pinów wejsciowych
 
